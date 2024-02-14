@@ -1,0 +1,143 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                                           Key Level |
+//|                               https://www.forexroboteasy.com    |
+//|                                             Forex Robot Easy Team |
+//|------------------------------------------------------------------|
+//|                     Terms of Reference:                          |
+//| Objective: Develop code for the Key Level Forex Software to       |
+//| implement the Price Retracement/Breakout Method algorithm and     |
+//| provide the necessary trading functions.                          |
+//|------------------------------------------------------------------|
+//|                           Developed by                            |
+//|                         Forex Robot Easy Team                      |
+//+------------------------------------------------------------------+
+
+// Include necessary libraries
+#include <Trade\PositionInfo.mqh>
+#include <Trade\Position.mqh>
+
+// Define key level constants
+#define KEY_LEVEL 1.2000
+#define RETRACEMENT_PERCENTAGE 0.382
+#define BREAKOUT_THRESHOLD 0.001
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    // Display key level entry points
+    DisplayKeyLevelEntryPoints();
+
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+    // Clean up any existing positions
+    CloseAllPositions();
+}
+
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+    // Check for potential entry points and trading opportunities
+    CheckEntryPoints();
+}
+
+//+------------------------------------------------------------------+
+//| Function to display key level entry points                       |
+//+------------------------------------------------------------------+
+void DisplayKeyLevelEntryPoints()
+{
+    // Calculate price retracement levels
+    double retracementLevel1 = KEY_LEVEL - (KEY_LEVEL * RETRACEMENT_PERCENTAGE);
+    double retracementLevel2 = KEY_LEVEL - (KEY_LEVEL * (2 * RETRACEMENT_PERCENTAGE));
+
+    // Calculate price breakout levels
+    double breakoutLevel1 = KEY_LEVEL + (KEY_LEVEL * BREAKOUT_THRESHOLD);
+    double breakoutLevel2 = KEY_LEVEL + (KEY_LEVEL * (2 * BREAKOUT_THRESHOLD));
+
+    // Display key level entry points on the chart
+    Comment('Key Level Entry Points:');
+    Comment('Retracement Level 1: ', retracementLevel1);
+    Comment('Retracement Level 2: ', retracementLevel2);
+    Comment('Breakout Level 1: ', breakoutLevel1);
+    Comment('Breakout Level 2: ', breakoutLevel2);
+}
+
+//+------------------------------------------------------------------+
+//| Function to check for potential entry points and trading         |
+//| opportunities                                                    |
+//+------------------------------------------------------------------+
+void CheckEntryPoints()
+{
+    // Get current price
+    double currentPrice = SymbolInfoDouble(Symbol(), SYMBOL_BID);
+
+    // Check for potential buy entry point
+    if (currentPrice > KEY_LEVEL && currentPrice < KEY_LEVEL + (KEY_LEVEL * BREAKOUT_THRESHOLD))
+    {
+        // Open a buy position
+        OpenBuyPosition();
+    }
+
+    // Check for potential sell entry point
+    if (currentPrice < KEY_LEVEL && currentPrice > KEY_LEVEL - (KEY_LEVEL * BREAKOUT_THRESHOLD))
+    {
+        // Open a sell position
+        OpenSellPosition();
+    }
+}
+
+//+------------------------------------------------------------------+
+//| Function to open a buy position                                   |
+//+------------------------------------------------------------------+
+void OpenBuyPosition()
+{
+    // Check if there is an existing position
+    if (!PositionSelect(_Symbol))
+    {
+        // Open a buy position with a volume of 0.1 lots
+        PositionOpen(_Symbol, POSITION_TYPE_BUY, 0.1, 0, 0, 0);
+    }
+}
+
+//+------------------------------------------------------------------+
+//| Function to open a sell position                                  |
+//+------------------------------------------------------------------+
+void OpenSellPosition()
+{
+    // Check if there is an existing position
+    if (!PositionSelect(_Symbol))
+    {
+        // Open a sell position with a volume of 0.1 lots
+        PositionOpen(_Symbol, POSITION_TYPE_SELL, 0.1, 0, 0, 0);
+    }
+}
+
+//+------------------------------------------------------------------+
+//| Function to close all positions                                   |
+//+------------------------------------------------------------------+
+void CloseAllPositions()
+{
+    // Get the total number of positions
+    int totalPositions = PositionGetInteger(POSITION_TOTAL);
+
+    // Loop through all positions
+    for (int i = 0; i < totalPositions; i++)
+    {
+        // Select the position by index
+        if (PositionSelectByIndex(i))
+        {
+            // Close the position
+            PositionClose(PositionGetTicket(), 0);
+        }
+    }
+}
